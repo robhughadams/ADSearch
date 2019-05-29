@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.DirectoryServices.AccountManagement;
+using System.DirectoryServices.ActiveDirectory;
+using System.DirectoryServices;
 
 namespace ADSearch
 {
@@ -15,35 +16,27 @@ namespace ADSearch
             }
 
             var searchTerm = args[0];
-            var domainName = args.Length > 1 ? args[1] : null;
 
-            using (PrincipalContext context = new PrincipalContext(ContextType.Domain, domainName))
+            using (var currentForest = Forest.GetCurrentForest())
+            using (var gc = currentForest.FindGlobalCatalog())
+            using (var userSearcher = gc.GetDirectorySearcher())
             {
-                using (UserPrincipal user = new UserPrincipal(context))
+                userSearcher.Filter = $"(&((&(objectCategory=Person)(objectClass=User)))(DisplayName=*{searchTerm}*))";
+
+                foreach (SearchResult searchResult in userSearcher.FindAll())
                 {
-                    user.DisplayName = $"*{searchTerm}*";
-                    var pS = new PrincipalSearcher
+                    foreach(System.Collections.DictionaryEntry property in searchResult.Properties)
                     {
-                        QueryFilter = user
-                    };
+                        Console.WriteLine(property.Key + ":");
 
-                    var results = pS.FindAll();
-
-                    foreach (var pc in results)
-                    {
-                        Console.WriteLine("Sam Account Name: {0}", pc.SamAccountName);
-                        Console.WriteLine();
-
-                        Console.WriteLine("AD Groups:");
-                        var groups = pc.GetGroups();
-                        foreach (var g in groups)
+                        foreach (var value in (ResultPropertyValueCollection)property.Value)
                         {
-                            Console.WriteLine("{0}\t{1}", g.SamAccountName, g.DisplayName);
+                            Console.WriteLine("\t" + value);
                         }
-
-                        Console.WriteLine();
-                        Console.WriteLine();
                     }
+
+                    Console.WriteLine();
+                    Console.WriteLine();
                 }
             }
         }
