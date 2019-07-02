@@ -2,7 +2,7 @@
   "profiles": {
     "ADSearch": {
       "commandName": "Project",
-      "commandLineArgs": "\"Rob Adams\" SJP"
+      "commandLineArgs": "foo rowan-dartington.co.uk -ds"
     }
   }
 }
