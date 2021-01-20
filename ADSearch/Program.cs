@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.DirectoryServices.AccountManagement;
+using System.Runtime.Versioning;
 
 namespace ADSearch
 {
     class Program
     {
+        [SupportedOSPlatform("windows")]
         static void Main(string[] args)
         {
             if (args.Length < 1)
